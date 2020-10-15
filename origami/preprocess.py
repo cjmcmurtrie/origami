@@ -9,7 +9,7 @@ def fetch_nordpool(url):
     :return: DataFrame
     '''
     datetime_col = 'datetime'
-    price_col = 'price'
+    price_col = 'n2ex_price'
     df = pd.read_html(url)[0]
     df.columns = [col[-1] for col in df.columns.values]
     df = df.rename({
@@ -54,15 +54,12 @@ def load_system_price(path, datetime_col='datetime'):
     :param datetime_col: name of time column to assign
     :return:
     '''
-    sell_price_col = 'sell_price'
-    buy_price_col = 'buy_price'
+    price_col = 'system_price'
     net_imbalance_col = 'net_imbalance_volume'
     df = pd.read_csv(path)
     df = df.dropna(how='all', axis='rows').reset_index(drop=True)
     df = df.rename({
         'Settlement Date': datetime_col,
-        'System Sell Price(£/MWh)': sell_price_col,
-        'System Buy Price(£/MWh)': buy_price_col,
         'Net Imbalance Volume(MWh)': net_imbalance_col
     },
         axis='columns'
@@ -72,7 +69,11 @@ def load_system_price(path, datetime_col='datetime'):
         lambda x: x[0] + timedelta(hours=x[1] / 2),
         axis=1
     )
-    df = df.drop('Settlement Period', axis='columns')
+    df[price_col] = (df['System Sell Price(£/MWh)'] + df['System Buy Price(£/MWh)']) / 2
+    df = df.drop(
+        ['Settlement Period', 'System Sell Price(£/MWh)', 'System Buy Price(£/MWh)'],
+        axis='columns'
+    )
     df = df.sort_values(datetime_col, ascending=True)
     return df
 

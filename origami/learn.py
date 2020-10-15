@@ -66,19 +66,23 @@ def data_split(train_data, test_data, feature_columns, target_column):
 
 def run_evaluation(
         dataset, feature_columns, target_column,
-        time_column, evaluation_time_window='M', eval_start_time='2018-02-01'
+        time_column, evaluation_time_window='M', eval_start_time='2018-02-01',
+        eval_end_time=None
 ):
     '''
-
-    :param dataset:
-    :param feature_columns:
-    :param target_column:
-    :param time_column:
-    :param evaluation_time_window:
-    :param eval_start_time:
-    :return:
+    Training loop to back-test periods over a specific time window.
+    :param dataset: DataFrame
+    :param feature_columns: columns to treat as input features
+    :param target_column: column to treat as prediction target
+    :param time_column: time column
+    :param evaluation_time_window: periods to evaluate over, e.g. 'M' or 'D'
+    :param eval_start_time: where to start evaluating from
+    :param eval_end_time: time up to which to evaluate
+    :return: DataFrame of results
     '''
     results = []
+    if eval_end_time is not None:
+        dataset = dataset[dataset[time_column] <= eval_end_time]
     time_grouped = dataset \
         .set_index(time_column) \
         .groupby(pd.Grouper(freq=evaluation_time_window))
