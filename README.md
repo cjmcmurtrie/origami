@@ -1,5 +1,7 @@
 ## Origami ML
 
+Utilities to analyse energy market time-series data.
+
 To install requirements:
 ```text
 pip install -r requirements.txt
